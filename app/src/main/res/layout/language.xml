@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView 
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:id="@+id/ScrollView"
+  android:layout_height="fill_parent"
+  android:layout_width="fill_parent">
+  <LinearLayout 
+  android:orientation="vertical"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent">
+
+    
+    <TextView
+        android:id="@+id/text_SBCS"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Single Byte Sample"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <TextView
+        android:id="@+id/text_Raster_Description"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="25sp" 
+        android:text="In raster mode, all characters are printed as graphics which means that no special printer settings or character mappings are required."
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+    
+    <Button
+         android:text="English" 
+         android:id="@+id/button_English" 
+         android:layout_width="fill_parent" 
+         android:layout_height="wrap_content" 
+         android:onClick="English">       
+    </Button>
+    
+    <TextView
+        android:id="@+id/text_DBSC"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25sp" 
+        android:text="Double Byte Sample"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <TextView
+        android:id="@+id/text_DBSC_Description"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="These samples will require the correct DBCS character set to be loaded and a memory switch change to print correctly.\nPlease contact your local support to discuss."
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    
+    <Button 
+        android:text="Japanese" 
+        android:id="@+id/button_Japanese" 
+        android:layout_width="fill_parent" 
+        android:layout_height="wrap_content" 
+        android:layout_marginTop="25sp" 
+        android:onClick="Japanese">
+        
+    </Button>
+    <Button 
+        android:text="SimplifiedChinese" 
+        android:id="@+id/button_SimplifiedChinese" 
+        android:layout_width="fill_parent" 
+        android:layout_height="wrap_content" 
+        android:layout_marginTop="25sp" 
+        android:onClick="SimplifiedChinese">
+        
+    </Button>
+	<Button 
+	    android:text="TraditionalChinese" 
+	    android:id="@+id/button_PartialCut_andFeed" 
+	    android:layout_width="fill_parent" 
+	    android:layout_height="wrap_content" 
+	    android:layout_marginTop="25sp" 
+	    android:onClick="TraditionalChinese"/>
+	
+</LinearLayout>
+
+</ScrollView>

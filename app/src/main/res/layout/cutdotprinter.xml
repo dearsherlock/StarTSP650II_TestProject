@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:orientation="vertical"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent">
+    <Button
+         android:text="Cut" 
+         android:id="@+id/button_Cut" 
+         android:layout_width="fill_parent" 
+         android:layout_height="wrap_content" 
+         android:onClick="Cut">
+        
+    </Button>
+	<Button 
+	    android:text="Cut With Feed" 
+	    android:id="@+id/button_Cut_andFeed" 
+	    android:layout_width="fill_parent" 
+	    android:layout_height="wrap_content" 
+	    android:layout_marginTop="25sp" 
+	    android:onClick="CutWithFeed"/>
+	
+	<Button 
+	    android:text="Help" 
+	    android:id="@+id/button_help" 
+	    android:layout_width="wrap_content" 
+	    android:layout_height="wrap_content" 
+	    android:layout_alignParentLeft="true"  
+	    android:layout_below="@+id/button_Cut_andFeed" 
+	    android:onClick="Help"/>
+</LinearLayout>

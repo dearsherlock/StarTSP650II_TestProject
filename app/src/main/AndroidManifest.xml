@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.StarMicronics.StarIOSDK" >
+    <supports-screens
+        android:smallScreens="true"
+        android:normalScreens="true"
+        android:largeScreens="true"
+        android:resizeable="true"
+        android:anyDensity="true" />
+    <uses-sdk android:minSdkVersion="7" />
+
+    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
+    <uses-permission android:name="android.permission.BLUETOOTH"></uses-permission>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+
+    <application android:icon="@drawable/staricon" android:label="@string/app_name" android:enabled="true" android:allowBackup="false">
+        <activity android:name=".PrinterTypeActivity"
+            android:label="@string/app_name" android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" android:resource="@xml/device_filter" />
+        </activity>
+        <activity android:name="barcodeselector" android:screenOrientation="portrait"></activity>
+        <activity android:name="code39Activity" android:screenOrientation="portrait"></activity>
+        <activity android:name="code93Activity" android:screenOrientation="portrait"></activity>
+        <activity android:name="ITFActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="code128Activity" android:screenOrientation="portrait"></activity>
+        <activity android:name="barcodeselector2d" android:screenOrientation="portrait"></activity>
+        <activity android:name="QRCodeActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="pdf417Activity" android:screenOrientation="portrait"></activity>
+        <activity android:name="BarcodePrintingMini" android:screenOrientation="portrait"></activity>
+        <activity android:name="QrcodeMiniActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="pdf417miniActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="cutActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="textFormatingActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="kanjiTextFormatingActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="rasterPrintingActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="imagePrintingActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="textFormatingMiniActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="kanjiTextFormatingMiniActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="helpActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="helpMessage" android:screenOrientation="portrait"></activity>
+        <activity android:name="LineModeHelpActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="RasterModeHelpActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="CommandTypeActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="StarIOSDKMobilePrinterActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="StarIOSDKPOSPrinterLineModeActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="StarIOSDKPOSPrinterRasterModeActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="DKAirCashActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="BluetoothSettingActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="BluetoothSettingHelpActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="PINCodeSettingActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="StarIOSDKDotPOSPrinterLineModeActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="cutDotPrinterActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="kanjiTextFormatingDotPrinterActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="textFormatingDotPrinterActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="LineModeforImpactDotMatrixHelpActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="simplifiedchineseTextFormatingActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="simplifiedchineseTextFormatingDotPrinterActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="traditionalchineseTextFormatingActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="traditionalchineseTextFormatingDotPrinterActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="SampleReciptActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="textFormattingSelectLanguageActivity" android:screenOrientation="portrait"></activity>
+    </application>
+</manifest>
