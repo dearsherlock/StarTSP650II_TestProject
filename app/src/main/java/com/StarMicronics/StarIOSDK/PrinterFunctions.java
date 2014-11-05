@@ -2295,7 +2295,8 @@ public class PrinterFunctions {
 	 */
 	public static void PrintSampleReceiptCHT(Context context, String portName, String portSettings, String commandType, Resources res, String strPrintArea) {
 		if ("Line" == commandType) {
-			if (strPrintArea.equals("3inch (80mm)")) {
+			if (strPrintArea.equals("3inch (80mm)"))
+            {
 				ArrayList<byte[]> list = new ArrayList<byte[]>();
 
 				list.add(new byte[] { 0x1b, 0x40 }); // Initialization
@@ -2307,10 +2308,13 @@ public class PrinterFunctions {
 				list.add(new byte[] { 0x1b, 0x69, 0x02, 0x00 }); // <ESC> <i> n1 n2
 				list.add(new byte[] { 0x1b, 0x45 }); // <ESC> <E>
 
-				// list.add("[If loaded.. Logo1 goes here]\r\n".getBytes());
-				// list.add(new byte[]{0x1b, 0x1c, 0x70, 0x01, 0x00, '\r', '\n'}); //Stored Logo Printing
+				 //list.add("[If loaded.. Logo1 goes here]\r\n".getBytes());
+				list.add(new byte[]{0x1b, 0x1c, 0x70, 0x01, 0x00}); //Stored Logo Printing
 
-				list.add(createBIG5(context.getResources().getString(R.string.title_company_name_cht) + "\n"));
+
+
+                //REPLACE BY SHERLOCK
+                list.add(createBIG5(context.getResources().getString(R.string.title_company_name_cht) + "\n"));
 
 				list.add(new byte[] { 0x1b, 0x69, 0x00, 0x00 }); // <ESC> <i> n1 n2
 				list.add(new byte[] { 0x1b, 0x46 }); // <ESC> <F>
@@ -2342,14 +2346,23 @@ public class PrinterFunctions {
 
 				// QR code
 				list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x53, 0x30, 0x02 });
-				list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x53, 0x31, 0x02 });
-				list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x53, 0x32, 0x05 });
-				list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x44, 0x31, 0x00, 0x23, 0x00 });
+				list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x53, 0x31, 0x03 });
+				list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x53, 0x32, 0x03 });
+                byte[] barCodeData=createBIG5_2("http://www.star-m.jp/eng/中文網址－請解析～index.html" );
+				list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x44, 0x31, 0x00, (byte) (barCodeData.length % 256), (byte) (barCodeData.length / 256) });
 
-				list.add("http://www.star-m.jp/eng/index_中文內容的網址.html".getBytes());
+				list.add(barCodeData);
+                //list.add(createBIG5("http://www.star-m.jp/eng/简体中文测试～index.html" ));
 
 				list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x50, 0x0a });
 
+
+                list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x53, 0x30, 0x02 });
+                list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x53, 0x31, 0x03 });
+                list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x53, 0x32, 0x03 });
+                list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x44, 0x31, 0x00, (byte) (barCodeData.length % 256), (byte) (barCodeData.length / 256) });
+
+                list.add(barCodeData);
 				list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x30 }); // <ESC> <GS> a n
 
 				list.add(createBIG5(context.getResources().getString(R.string.Item_list_cht) + "\n"));
@@ -2448,7 +2461,7 @@ public class PrinterFunctions {
 				list.add(starbitmap.getImageRasterDataForPrinting(true));
 
 				// QRCode
-				Bitmap bitmap = BitmapFactory.decodeResource(res, R.drawable.qrcode);
+				Bitmap bitmap = BitmapFactory.decodeResource(res, R.drawable.qrcode_cht);
 				StarBitmap starbitmap2 = new StarBitmap(bitmap, false, 146);
 				list.add(starbitmap2.getImageRasterDataForPrinting(true));
 
@@ -2625,11 +2638,22 @@ public class PrinterFunctions {
 		return byteBuffer;
 	}
 
+
+    private static byte[] createBIG5_2(String inputText) {
+       // byte[] barCodeData = textView.getText().toString().getBytes();
+
+        byte[] byteBuffer = null;
+
+            byteBuffer = inputText.getBytes();
+
+
+        return byteBuffer;
+    }
 	private static byte[] createBIG5(String inputText) {
 		byte[] byteBuffer = null;
 
 		try {
-			byteBuffer = inputText.getBytes("Big5");
+			byteBuffer = inputText.getBytes("BIG-5");
 		} catch (UnsupportedEncodingException e) {
 			byteBuffer = inputText.getBytes();
 		}

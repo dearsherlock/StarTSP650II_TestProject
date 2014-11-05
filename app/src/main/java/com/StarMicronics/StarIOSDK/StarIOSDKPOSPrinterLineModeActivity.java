@@ -15,6 +15,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.view.View;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -35,10 +36,15 @@ public class StarIOSDKPOSPrinterLineModeActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		this.getWindow().setSoftInputMode(LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 		setContentView(R.layout.main);
+        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectDiskReads()
+                .detectDiskWrites().detectNetwork().penaltyLog().build());
+        StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectLeakedSqlLiteObjects()
+                .detectLeakedClosableObjects().penaltyLog().penaltyDeath().build());
 
-		EditText portNameField = (EditText) findViewById(R.id.editText_PortName);
+
+        EditText portNameField = (EditText) findViewById(R.id.editText_PortName);
 		SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
-		portNameField.setText(pref.getString("portName", "TCP:192.168.11.103"));
+		portNameField.setText(pref.getString("portName", "TCP:192.168.192.45"));
 
 		InitializeComponent();
 		// setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);

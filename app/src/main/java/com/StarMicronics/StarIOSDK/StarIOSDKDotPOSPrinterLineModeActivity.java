@@ -38,7 +38,7 @@ public class StarIOSDKDotPOSPrinterLineModeActivity extends Activity {
 
 		EditText portNameField = (EditText) findViewById(R.id.editText_PortName);
 		SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
-		portNameField.setText(pref.getString("dot_portName", "TCP:192.168.11.103"));
+		portNameField.setText(pref.getString("dot_portName", "TCP:192.168.192.45"));
 
 		InitializeComponent();
 		// setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);

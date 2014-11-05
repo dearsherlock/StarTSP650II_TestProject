@@ -60,8 +60,8 @@ public class DKAirCashActivity extends Activity {
 		EditText portNameField = (EditText) findViewById(R.id.editText_PortName);
 		EditText drawerportNameField = (EditText) findViewById(R.id.editText_DrawerPortName);
 		SharedPreferences pref = getSharedPreferences("pref", MODE_PRIVATE);
-		portNameField.setText(pref.getString("printerportName", "TCP:192.168.11.103"));
-		drawerportNameField.setText(pref.getString("drawerportName", "TCP:192.168.11.10"));
+		portNameField.setText(pref.getString("printerportName", "TCP:192.168.192.45"));
+		drawerportNameField.setText(pref.getString("drawerportName", "TCP:192.168.192.10"));
 
 		InitializeComponent();
 		// setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
