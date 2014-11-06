@@ -3,6 +3,7 @@ package com.StarMicronics.StarIOSDK;
 import java.io.UnsupportedEncodingException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
@@ -2298,8 +2299,11 @@ public class PrinterFunctions {
 			if (strPrintArea.equals("3inch (80mm)"))
             {
 				ArrayList<byte[]> list = new ArrayList<byte[]>();
+                //new String(bytes);{ 0x1b, 0x40 });
 
-				list.add(new byte[] { 0x1b, 0x40 }); // Initialization
+                byte[] d= { 0x1b, 0x40 };
+               String ds= new String (d);
+                list.add(new byte[] { 0x1b, 0x40 }); // Initialization
 				// list.add(new byte[]{0x1d, 0x57, (byte) 0x80, 0x01});
 				// list.add(new byte[]{0x1b, 0x24, 0x31});
 				list.add(new byte[] { 0x1b, 0x44, 0x10, 0x00 }); // <ESC> <D> n1 n2 nk <NUL>
@@ -2309,8 +2313,13 @@ public class PrinterFunctions {
 				list.add(new byte[] { 0x1b, 0x45 }); // <ESC> <E>
 
 				 //list.add("[If loaded.. Logo1 goes here]\r\n".getBytes());
-				list.add(new byte[]{0x1b, 0x1c, 0x70, 0x01, 0x00}); //Stored Logo Printing
+                //控制列印水平對齊為靠右
+                list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x32 });
 
+                list.add(new byte[]{0x1b, 0x1c, 0x70, 0x01, 0x00}); //Stored Logo Printing
+
+                //控制列印水平對齊為置中
+                list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x31 });
 
 
                 //REPLACE BY SHERLOCK
@@ -2352,9 +2361,8 @@ public class PrinterFunctions {
 				list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x44, 0x31, 0x00, (byte) (barCodeData.length % 256), (byte) (barCodeData.length / 256) });
 
 				list.add(barCodeData);
-                //list.add(createBIG5("http://www.star-m.jp/eng/简体中文测试～index.html" ));
-
 				list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x50, 0x0a });
+                list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x30 }); // <ESC> <GS> a n
 
 
                 list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x53, 0x30, 0x02 });
@@ -2363,7 +2371,8 @@ public class PrinterFunctions {
                 list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x44, 0x31, 0x00, (byte) (barCodeData.length % 256), (byte) (barCodeData.length / 256) });
 
                 list.add(barCodeData);
-				list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x30 }); // <ESC> <GS> a n
+                list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x50, 0x0a });
+                list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x30 }); // <ESC> <GS> a n
 
 				list.add(createBIG5(context.getResources().getString(R.string.Item_list_cht) + "\n"));
 
