@@ -30,7 +30,7 @@ import com.starmicronics.stario.StarIOPortException;
 import com.starmicronics.stario.StarPrinterStatus;
 
 public class PrinterFunctions {
-	public enum NarrowWide {
+    public enum NarrowWide {
 		_2_6, _3_9, _4_12, _2_5, _3_8, _4_10, _2_4, _3_6, _4_8
 	};
 
@@ -398,7 +398,8 @@ public class PrinterFunctions {
 			/*
 			 * using StarIOPort3.1.jar (support USB Port) Android OS Version: upper 2.2
 			 */
-			port = StarIOPort.getPort(portName, portSettings, 10000, context);
+            port = StarIOPort.getPort(portName, portSettings, 10000, context);
+            //port.getDipSwitchInformation().keySet();
 			/*
 			 * using StarIOPort.jar Android OS Version: under 2.1 port = StarIOPort.getPort(portName, portSettings, 10000);
 			 */
@@ -2277,7 +2278,51 @@ public class PrinterFunctions {
 			}
 		}
 	}
+    public static byte[] RetriveSampleQRCodeData(){
+        ArrayList<byte[]> list = new ArrayList<byte[]>();
+        ////// 依設定產生 QR Code Cimmand ///////
+        list.add(new byte[] { 0x1d, 0x28, 0x6b, 0x03,0x00,0x31,0x52,0x30 });
+        /// 1.How to set QR Code Model 1 or 2
+        ///  GS ( k pL pH cn fn n1 n2
+        /// (pL + pH × 256) = 4 (pL = 4, pH = 0)
+        /// cn = 49
+        /// fn = 65
+        /// n1 = 49, 50
+        /// n2 = 0
+        String qrCodeModel="2";
+        //Set the Model of QR code to model 2,
+        list.add(new byte[] { 0x1d, 0x28, 0x6b, 0x04,0x00,0x31,0x41});
 
+        list.add(createBIG5_2( qrCodeModel));
+        list.add(new byte[] {0x00});
+/*
+        /// 2.Set QR Cell Size
+        ///  GS ( k pL pH cn fn n
+        /// (pL + pH × 256) = 3 (pL = 3, pH = 0)
+        /// cn = 49
+        /// fn = 67
+        /// 1 ≤ n ≤ 16
+        string cellSize = Char.ConvertFromUtf32(this.CmBQRSize.SelectedIndex + 1);
+        //Set the cell size - QR Code Size
+        string QRcellSize = "\x1d\x28\x6b\x03\x00\x31\x43" + cellSize;
+
+        string cellSize1 = Char.ConvertFromUtf32(this.CmBQRSize.SelectedIndex + 1);
+        //Set the cell size - QR Code Size
+        string QRcellSize1 = "\x1d\x28\x6b\x03\x00\x31\x43" + cellSize1;
+*/
+
+        ///3. How to set QR Code Correction Level
+        ///  GS ( k pL pH cn fn n
+        /// (pL + pH × 256) = 3 (pL = 3, pH = 0)
+        /// cn = 49
+        /// fn = 69
+        /// 48 ≤ n ≤ 51
+
+
+
+        return null;
+
+    }
 	/**
 	 * This function shows how to print the receipt data of a thermal POS printer.
 	 * 
@@ -2295,141 +2340,305 @@ public class PrinterFunctions {
 	 *     Printable area size, This should be ("3inch (80mm)" or "4inch (112mm)")
 	 */
 	public static void PrintSampleReceiptCHT(Context context, String portName, String portSettings, String commandType, Resources res, String strPrintArea) {
-		if ("Line" == commandType) {
+      boolean isPrintESCPOSCommand=false;
+      boolean isAppendInvoice=false;//補發票
+      boolean isPrintTaxNo=true;
+      byte[] qrcodeData1;
+      byte[] qrcodeData2;
+        if ("Line" == commandType) {
 			if (strPrintArea.equals("3inch (80mm)"))
             {
-				ArrayList<byte[]> list = new ArrayList<byte[]>();
-                //new String(bytes);{ 0x1b, 0x40 });
+                if(isPrintESCPOSCommand){
+                    ArrayList<byte[]> list = new ArrayList<byte[]>();
+                    list.add(new byte[] { 0x1b, 0x40 });// Initialization
+                    list.add(new byte[] { 0x1b, 0x1e, 0x41, 0x00 });// 2.指定 機構寬度為 80 mm,可印寬度 72mm
+                    list.add(new byte[]
+                    {
+                        0x1d, 0x50,(byte) 0xcb,(byte) 0xcb,                     // 3.指定 X,Y 的Basic pitch(1/203,1/203 DPI)
+                                0x1d, 0x4c,(byte) 0xb0, 0x00                      // 4.左邊界位置起印位置為 22mm
+                    });
+                    //5.Print Logo (長度:11mm)
+                    //String PrtLogo = "\x1d\x38\x4c\x06\x00\x00\x00\x30\x45\x30\x31\x01\x01"; // Printing Logo on Current Poistion
+                    list.add(new byte[]{0x1d, 0x38, 0x4c, 0x06, 0x00, 0x00, 0x00, 0x30, 0x45, 0x30, 0x31, 0x01, 0x01});
+                    //6. Page Mode Setting
+                    //設定 Page Mode 長度 640 Dots / 203DPI = 80 mm
 
-                byte[] d= { 0x1b, 0x40 };
-               String ds= new String (d);
-                list.add(new byte[] { 0x1b, 0x40 }); // Initialization
-				// list.add(new byte[]{0x1d, 0x57, (byte) 0x80, 0x01});
-				// list.add(new byte[]{0x1b, 0x24, 0x31});
-				list.add(new byte[] { 0x1b, 0x44, 0x10, 0x00 }); // <ESC> <D> n1 n2 nk <NUL>
-				list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x31 }); // <ESC> <GS> a n
+                    list.add(new byte[]{
+                            //    0x1b,0x40,0x1b,0x1d,0x03,0x03,0x00,0x00,            // 1.Reset Print
+                            //    0x1b,0x1e,0x41,0x03,                                // 2.指定 機構寬度為 58.7 mm,可印寬度50.8mm
+                            //    0x1b,0x1e,0x41,0x00,                                // 2.指定 機構寬度為 82 mm,可印寬度 72mm
+                            //    0x1d,0x50,0xcb,0xcb,                                // 3.指定 X,Y 的Basic pitch(1/203,1/203 DPI)
 
-				list.add(new byte[] { 0x1b, 0x69, 0x02, 0x00 }); // <ESC> <i> n1 n2
-				list.add(new byte[] { 0x1b, 0x45 }); // <ESC> <E>
+                            0x1b,0x4c,                                          // 4.Page Mode Selected
+                            0x1b,0x54,0x00,                                     // 5.Select character print direction in page mode
+                            0x1b,0x57,0x00,0x00,0x00,0x00,(byte)0x90,0x02             // 6-1.Select print region in page mode :編輯寬度為 0x290 (656 dots約為82mm)
+                    });
+                    // 6-2.Select print region in page mode : 長度 638 dots)
+                    list.add(new byte[] { (byte)0x80, 0x02 });
+                    //3. E-INVOICE Data 第一行,
+                    // 指定 (X,Y) 位置於  203 DPI
+                    list.add(new byte[] { 0x1b, 0x24,(byte)0xba,0x00,0x1d,0x24,0x30,0x00 });
+                    //列印發票名稱，分為補印或第一次（有code區分）
+                    if ( isAppendInvoice == true)
+                    {   // 補印發票
+                        list.add(new byte[] { 0x1c, 0x53,0x00,0x00 });// 指定中文字距為 24 dots
+                        list.add(new byte[] { 0x1b, 0x20,0x00 });// 指定英數字距為 12 Dots
+                        list.add(new byte[] { 0x1b, 0x21,0x31,0x1c,0x21,0x0c });// 指定使用 2倍高,2倍寬 的 FONT B字
+                        byte[] invoiceData=createBIG5_2("電子發票證明聯" );        //指定 CHINESE   Data
+                        list.add(invoiceData);
+                        list.add(new byte[] { 0x1b, 0x21,0x01,0x1c,0x21,0x00 });// 指定使用 1倍高,1倍寬 的 FONT B字
+                        list.add(new byte[] { 0x1b, 0x21,0x11,0x1c,0x21,0x08 });// 指定使用 2倍高,1倍寬 的 FONT B字
+                        list.add(new byte[] { 0x1c, 0x53,0x06 ,0x00});// 指定中文字距為 30 dots
+                        byte[] invoiceappendData=createBIG5_2("補印" );        //指定 CHINESE   Data
+                        list.add(invoiceappendData);
 
-				 //list.add("[If loaded.. Logo1 goes here]\r\n".getBytes());
-                //控制列印水平對齊為靠右
-                list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x32 });
+                    }
+                    else
+                    {  //非補印發票
+                        list.add(new byte[] { 0x1c, 0x53,0x03,0x03 });// 指定中文字距為 30 dots
+                        list.add(new byte[] { 0x1b, 0x20,0x00 });// 指定英數字距為 12 Dots
+                        list.add(new byte[] { 0x1b, 0x21,0x31,0x1c,0x21,0x0c });// 指定使用 2倍高,2倍寬 的 FONT B字
+                        byte[] invoiceData=createBIG5_2("電子發票證明聯" );        //指定 CHINESE   Data
+                        list.add(invoiceData);
 
-                list.add(new byte[]{0x1b, 0x1c, 0x70, 0x01, 0x00}); //Stored Logo Printing
+                    }
+                    //4. E-INVOICE Data 第二行
+                    // 指定 (X,Y) 位置於 203 DPI
+                    list.add(new byte[] { 0x1b, 0x24,(byte)0xc0,0x00,0x1d,0x24,0x6c,0x00 });
+                    list.add(new byte[] { 0x1c, 0x53,0x00,0x05 });// 指定中文字距為 29 dots
+                    list.add(new byte[] { 0x1b, 0x20,0x05 });// 指定英數字距為 17 Dots
+                    list.add(new byte[] { 0x1b, 0x21,0x38 ,0x1c,0x21,0x0c});// 指定使用 2倍高,2倍寬 的 FONT A字
+                    byte[] dateData=createBIG5_2("102年11-12月" );        //指定 CHINESE   Data
+                    list.add(dateData);
 
-                //控制列印水平對齊為置中
-                list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x31 });
+                    //5. E-INVOICE Data 第三行
+                    // 指定 (X,Y) 位置於 203 DPI
+                    list.add(new byte[] { 0x1b, 0x24,(byte)0xc0,0x00,0x1d,0x24,(byte)0xa8,0x00 });
+
+                    list.add(new byte[] { 0x1c, 0x53,0x00,0x06 });// 指定中文字距為 30 dots
+                    list.add(new byte[] { 0x1b, 0x20,0x06 });// 指定英數字距為 18 Dots
+                    list.add(new byte[] { 0x1c, 0x21,0x0c});// 指定使用 2倍高,2倍寬 的 FONT A字
+                    byte[] invoiceNoData=createBIG5_2("AB-12345678" );        //指定 CHINESE   Data
+                    list.add(invoiceNoData);
+                    //5. E-INVOICE Data 第四行
+                    // 指定 (X,Y) 位置於   203 DPI
+                    list.add(new byte[] { 0x1b, 0x24,(byte)0xc0,0x00,0x1d,0x24,(byte)0xcc,0x00 });
+
+                    list.add(new byte[] { 0x1b, 0x21,0x00,0x1c,0x21,0x00 });// Select Font A
+                    list.add(new byte[] { 0x1c, 0x53,0x00,0x00,0x1b,0x20,0x00 });// Set Kanji Pitch : 24 dots, Ascii 12 Dots
+                    byte[] timeData=createBIG5_2("2013-12-12 13:40:56" );        //指定 CHINESE   Data
+                    list.add(timeData);
+                    //6. E-INVOICE Data 第伍行
+                    // 指定 (X,Y) 位置於 203 DPI
+                    list.add(new byte[] { 0x1b, 0x24,(byte)0xc0,0x00,0x1d,0x24,(byte)0xea,0x00 });
+                    String sampleRec = ""
+                            + "隨機碼  0912    總計 1000";
+                    byte[] sampleRecData=createBIG5_2(sampleRec );        //指定 CHINESE   Data
+                    list.add(sampleRecData);
+
+                    if (isPrintTaxNo)
+                    {   // 有統一編號
+                        //7. E-INVOICE Data 第六行
+                        // 指定 (X,Y) 位置於 203 DPI
+                        list.add(new byte[] { 0x1b, 0x24,(byte)0xc0,0x00,0x1d,0x24,(byte)0x08,0x01 });
+                        String sampleRec_Buyer = ""
+                                + "賣方 12345678　 買方 87654321";
+                        byte[] sampleRec_BuyerData=createBIG5_2(sampleRec_Buyer );        //指定 CHINESE   Data
+                        list.add(sampleRec_BuyerData);
+                    }
+                    else
+                    {
+                        //無統一編號
+                        //7. E-INVOICE Data 第六行
+                        // 指定 (X,Y) 位置於 203 DPI
+                        list.add(new byte[] { 0x1b, 0x24,(byte)0xc0,0x00,0x1d,0x24,(byte)0x08,0x01 });
+                        String sampleRec_Buyer = ""
+                                + "賣方 12345678";
+                        byte[] sampleRec_BuyerData=createBIG5_2(sampleRec_Buyer );        //指定 CHINESE   Data
+                        list.add(sampleRec_BuyerData);
+                    }
+                    //8. E-INVOICE Data 第七行 39條碼
+                    // 指定 (X,Y) 位置於 203 DPI
+                    list.add(new byte[] { 0x1b, 0x24,(byte)0xd2,0x00,0x1d,0x24,(byte)0x5c,0x01 });
+                    list.add(new byte[] { 0x1d, 0x48,0x00 });// Barcode : HRI character print position : 1D 48 n ( 0: none , 1: above , 2:Below , 3: both)
+                    list.add(new byte[] { 0x1d, 0x66,0x00 });// Barcode : HRI character font : 1D 66 n ( 0:12x24 1: 9x17)
+                    list.add(new byte[] { 0x1d, 0x68,0x38 });// Barcode : Set bar code height : 1D 68 n (n dots)
+                    list.add(new byte[] { 0x1d, 0x6b,0x04 });// BarCode : Set bar code horizontal size : 1D 77 n (1 ≤ n ≤ 6)
+                    list.add(new byte[] { 0x1d, 0x48,0x00 });// Barcode : 1D 6B m d1...dk  NULL : BarCode Data
+                    String dataUnknow = "10212AB123456780921";
+                    byte[] dataUnknowData=createBIG5_2(dataUnknow );        //指定 CHINESE   Data
+                    list.add(dataUnknowData);
+                    list.add(new byte[] { 0x00 });
+
+                    //9. E-INVOICE Data 第八行 QR-Code
+                    //Get QR Code Command
+
+                    list.add(new byte[] { 0x1b, 0x64, 0x33 }); // Cut
+                    list.add(new byte[] { 0x07 }); // Kick cash drawer
+
+                    sendCommand(context, portName, portSettings, list);
+
+                }
+                else{
 
 
-                //REPLACE BY SHERLOCK
-                list.add(createBIG5(context.getResources().getString(R.string.title_company_name_cht) + "\n"));
+                    ArrayList<byte[]> list = new ArrayList<byte[]>();
+                    //new String(bytes);{ 0x1b, 0x40 });
 
-				list.add(new byte[] { 0x1b, 0x69, 0x00, 0x00 }); // <ESC> <i> n1 n2
-				list.add(new byte[] { 0x1b, 0x46 }); // <ESC> <F>
+                    byte[] d= { 0x1b, 0x40 };
+                    list.add(new byte[] { 0x1b, 0x40 }); // Initialization
+                    // list.add(new byte[]{0x1d, 0x57, (byte) 0x80, 0x01});
+                    // list.add(new byte[]{0x1b, 0x24, 0x31});
+                    list.add(new byte[] { 0x1b, 0x44, 0x10, 0x00 }); // <ESC> <D> n1 n2 nk <NUL>
+                    list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x31 }); // <ESC> <GS> a n
 
-				list.add(createBIG5("--------------------------------------------"));
+                    list.add(new byte[] { 0x1b, 0x69, 0x02, 0x00 }); // <ESC> <i> n1 n2
+                    list.add(new byte[] { 0x1b, 0x45 }); // <ESC> <E>
 
-				list.add(new byte[] { 0x1b, 0x69, 0x01, 0x01 }); // <ESC> <i> n1 n2
+                    //list.add("[If loaded.. Logo1 goes here]\r\n".getBytes());
+                    //控制列印水平對齊為靠右
+                    list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x32 });
 
-				list.add(createBIG5(context.getResources().getString(R.string.title_receipt_name_cht) + "\n"));
+                    list.add(new byte[]{0x1b, 0x1c, 0x70, 0x01, 0x00}); //Stored Logo Printing
 
-				list.add(createBIG5(context.getResources().getString(R.string.cht_103) + "\n"));
-
-				list.add(createBIG5(context.getResources().getString(R.string.ev_99999999_cht) + "\n"));
-
-				list.add(new byte[] { 0x1b, 0x69, 0x00, 0x00 }); // <ESC> <i> n1 n2
-				list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x30 }); // <ESC> <GS> a n
-
-				list.add(createBIG5(context.getResources().getString(R.string.date_cht) + "\n"));
-
-				list.add(createBIG5(context.getResources().getString(R.string.random_code_cht) + "\n"));
-
-				list.add(createBIG5(context.getResources().getString(R.string.seller_cht) + "\n"));
-
-				// 1D barcode example
-				list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x01 });
-				list.add(new byte[] { 0x1b, 0x62, 0x34, 0x31, 0x32, 0x50 });
-
-				list.add("999999999\u001e\r\n".getBytes());
-
-				// QR code
-				list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x53, 0x30, 0x02 });
-				list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x53, 0x31, 0x03 });
-				list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x53, 0x32, 0x03 });
-                byte[] barCodeData=createBIG5_2("http://www.star-m.jp/eng/中文網址－請解析～index.html" );
-				list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x44, 0x31, 0x00, (byte) (barCodeData.length % 256), (byte) (barCodeData.length / 256) });
-
-				list.add(barCodeData);
-				list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x50, 0x0a });
-                list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x30 }); // <ESC> <GS> a n
+                    //控制列印水平對齊為置中
+                    list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x31 });
 
 
-                list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x53, 0x30, 0x02 });
-                list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x53, 0x31, 0x03 });
-                list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x53, 0x32, 0x03 });
-                list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x44, 0x31, 0x00, (byte) (barCodeData.length % 256), (byte) (barCodeData.length / 256) });
+                    //REPLACE BY SHERLOCK
+                    list.add(createBIG5(context.getResources().getString(R.string.title_company_name_cht) + "\n"));
 
-                list.add(barCodeData);
-                list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x50, 0x0a });
-                list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x30 }); // <ESC> <GS> a n
+                    list.add(new byte[] { 0x1b, 0x69, 0x00, 0x00 }); // <ESC> <i> n1 n2
+                    list.add(new byte[] { 0x1b, 0x46 }); // <ESC> <F>
 
-				list.add(createBIG5(context.getResources().getString(R.string.Item_list_cht) + "\n"));
+                    list.add(createBIG5("--------------------------------------------"));
 
-				list.add(createBIG5(context.getResources().getString(R.string.Item_list_Number_cht) + "\n\n\n"));
+                    list.add(new byte[] { 0x1b, 0x69, 0x01, 0x01 }); // <ESC> <i> n1 n2
 
-				list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x31 }); // <ESC> <GS> a n
+                    list.add(createBIG5(context.getResources().getString(R.string.title_receipt_name_cht) + "\n"));
 
-				list.add(createBIG5(context.getResources().getString(R.string.Sales_schedules_cht) + "\n"));
+                    list.add(createBIG5(context.getResources().getString(R.string.cht_103) + "\n"));
 
-				list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x30 }); // <ESC> <GS> a n
+                    list.add(createBIG5(context.getResources().getString(R.string.ev_99999999_cht) + "\n"));
 
-				list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x32 }); // <ESC> <GS> a n
+                    list.add(new byte[] { 0x1b, 0x69, 0x00, 0x00 }); // <ESC> <i> n1 n2
+                    list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x30 }); // <ESC> <GS> a n
 
-				list.add(createBIG5(context.getResources().getString(R.string.date_2_cht) + "\n"));
+                    list.add(createBIG5(context.getResources().getString(R.string.date_cht) + "\n"));
 
-				list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x30 }); // <ESC> <GS> a n
+                    list.add(createBIG5(context.getResources().getString(R.string.random_code_cht) + "\n"));
 
-				list.add(createBIG5(context.getResources().getString(R.string.ItemInfo_3inch_line_cht) + "\n"));
+                    list.add(createBIG5(context.getResources().getString(R.string.seller_cht) + "\n"));
 
-				list.add(new byte[] { 0x1b, 0x45 }); // <ESC> <E>
+                    // 1D barcode example
+                    list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x01 });
+                    list.add(new byte[] { 0x1b, 0x62, 0x34, 0x31, 0x32, 0x50 });
 
-				list.add(createBIG5(context.getResources().getString(R.string.sub_3inch_line_cht) + "\n"));
+                    list.add("999999999\u001e\r\n".getBytes());
+                    //1.進入Page Mode
+                    list.add(new byte[] { 0x1b, 0x1d, 0x50, 0x30});
+                    //2.指定Page Mode 的列印方向(直印)
+                    list.add(new byte[] { 0x1b, 0x1d, 0x50, 0x32,0x00});
+                    //3.指定 Page Mode 的列印範圍
+                    // X起點座標: 0x0000 = 0mm ，Y起點座標: 0x0000 = 0mm
+                    // X終點座標: 0x0196 = 406/203=50.8mm ，Y終點座標: 0x00c8 = 200/203=25mm
+                    // 此Page Mode 列印範圍大小為 50.8 x 25 mm  ß此範圍必須大於QR Code的列印範圍
+                    list.add(new byte[] { 0x1b, 0x1d, 0x50, 0x33,0x00,0x00, 0x00,0x00,(byte)(483%256),(byte)(483/256),(byte)(200%256),(byte)(200/256)});
+                    //4.指定 水平絕對位置 0x0018=24/203 = 3mmß此值可調整
+                    list.add(new byte[] { 0x1b, 0x1d, 0x41, 0x18,0x00});
 
-				list.add(createBIG5(context.getResources().getString(R.string.total_3inch_line_cht) + "\n"));
+                    // 5.列印QR code1
+                    list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x53, 0x30, 0x02 });        //指定 QrCode Mode = Mode2
+                    list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x53, 0x31, 0x03 });        //指定 QrCode LEVEL =  30%
+                    list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x53, 0x32, 0x03 });         //指定 QrCode  Size =  3
+                    byte[] barCodeData=createBIG5_2("http://www.star-m.jp/eng/NEW中文網址－請解析～index.html" );        //指定 QrCode   Data
+                    //設定QRCode的資料大小
+                    list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x44, 0x31, 0x00, (byte) (barCodeData.length % 256), (byte) (barCodeData.length / 256) });
+                    list.add(barCodeData);
+                    list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x50 });    //Qrcode 圖像起印
 
-				list.add(new byte[] { 0x1b, 0x46 }); // <ESC> <F>
+                    //6.指定 水平絕對位置 0x120=288/203 = 36mmß此值可調整
+                    list.add(new byte[] { 0x1b, 0x1d, 0x41, 0x20,0x01});
 
-				list.add(createBIG5("--------------------------------------------\n"));
+                    // 7.列印QR code2
+                    byte[] barCodeData2=createBIG5_2("http://www.star-m.jp/eng/OLD中文網址－請解析～index.html" );        //指定 QrCode   Data
 
-				list.add(createBIG5(context.getResources().getString(R.string.cash_3inch_line_cht) + "\n"));
+                    list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x53, 0x30, 0x02 });        //指定 QrCode Mode = Mode2
+                    list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x53, 0x31, 0x03 });        //指定 QrCode LEVEL =  30%
+                    list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x53, 0x32, 0x03 });         //指定 QrCode  Size =  3
+                    //設定QRCode的資料大小
+                    list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x44, 0x31, 0x00, (byte) (barCodeData2.length % 256), (byte) (barCodeData2.length / 256) });
+                    list.add(barCodeData2);
+                    list.add(new byte[] { 0x1b, 0x1d, 0x79, 0x50 });    // Qrcode 圖像起印
 
-				list.add(createBIG5(context.getResources().getString(R.string.change_3inch_line_cht) + "\n"));
+                    // 8. Page Mode 資料起印
+                    list.add(new byte[] { 0x1b, 0x1d, 0x50, 0x36});
+                    list.add(new byte[] { 0x1b, 0x40 }); // Initialization
+                    //9.退出Page Mode
+                    //list.add(new byte[] { 0x1b, 0x1d, 0x50, 0x31});
 
-				list.add(new byte[] { 0x1b, 0x45 }); // <ESC> <E>
+                    list.add("999999999\u001e\r\n".getBytes());
+                    //控制列印水平對齊為靠左
+                    list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x30 }); // <ESC> <GS> a n
 
-				list.add(createBIG5(context.getResources().getString(R.string.Invoice_3inch_line_cht) + "\n"));
+                    list.add(createBIG5(context.getResources().getString(R.string.Item_list_cht) + "\n"));
 
-				list.add(new byte[] { 0x1b, 0x46 }); // <ESC> <F>
+                    list.add(createBIG5(context.getResources().getString(R.string.Item_list_Number_cht) + "\n\n\n"));
 
-				list.add(createBIG5(context.getResources().getString(R.string.date_3_cht) + "\n"));
+                    list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x31 }); // <ESC> <GS> a n
 
-				// 1D barcode example
-				list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x01 });
-				list.add(new byte[] { 0x1b, 0x62, 0x34, 0x31, 0x32, 0x50 });
+                    list.add(createBIG5(context.getResources().getString(R.string.Sales_schedules_cht) + "\n"));
 
-				list.add("999999999\u001e\r\n".getBytes());
+                    list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x30 }); // <ESC> <GS> a n
 
-				list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x30 }); // <ESC> <GS> a n
+                    list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x32 }); // <ESC> <GS> a n
 
-				list.add(createBIG5(context.getResources().getString(R.string.info_cht) + "\n"));
+                    list.add(createBIG5(context.getResources().getString(R.string.date_2_cht) + "\n"));
 
-				list.add(createBIG5(context.getResources().getString(R.string.info_number_cht) + "\n"));
+                    list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x30 }); // <ESC> <GS> a n
 
-				list.add(new byte[] { 0x1b, 0x64, 0x33 }); // Cut
-				list.add(new byte[] { 0x07 }); // Kick cash drawer
+                    list.add(createBIG5(context.getResources().getString(R.string.ItemInfo_3inch_line_cht) + "\n"));
 
-				sendCommand(context, portName, portSettings, list);
+                    list.add(new byte[] { 0x1b, 0x45 }); // <ESC> <E>
+
+                    list.add(createBIG5(context.getResources().getString(R.string.sub_3inch_line_cht) + "\n"));
+
+                    list.add(createBIG5(context.getResources().getString(R.string.total_3inch_line_cht) + "\n"));
+
+                    list.add(new byte[] { 0x1b, 0x46 }); // <ESC> <F>
+
+                    list.add(createBIG5("--------------------------------------------\n"));
+
+                    list.add(createBIG5(context.getResources().getString(R.string.cash_3inch_line_cht) + "\n"));
+
+                    list.add(createBIG5(context.getResources().getString(R.string.change_3inch_line_cht) + "\n"));
+
+                    list.add(new byte[] { 0x1b, 0x45 }); // <ESC> <E>
+
+                    list.add(createBIG5(context.getResources().getString(R.string.Invoice_3inch_line_cht) + "\n"));
+
+                    list.add(new byte[] { 0x1b, 0x46 }); // <ESC> <F>
+
+                    list.add(createBIG5(context.getResources().getString(R.string.date_3_cht) + "\n"));
+
+                    // 1D barcode example
+                    list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x01 });
+                    list.add(new byte[] { 0x1b, 0x62, 0x34, 0x31, 0x32, 0x50 });
+
+                    list.add("999999999\u001e\r\n".getBytes());
+
+                    list.add(new byte[] { 0x1b, 0x1d, 0x61, 0x30 }); // <ESC> <GS> a n
+
+                    list.add(createBIG5(context.getResources().getString(R.string.info_cht) + "\n"));
+
+                    list.add(createBIG5(context.getResources().getString(R.string.info_number_cht) + "\n"));
+
+                    list.add(new byte[] { 0x1b, 0x64, 0x33 }); // Cut
+                    list.add(new byte[] { 0x07 }); // Kick cash drawer
+
+                    sendCommand(context, portName, portSettings, list);
+
+                }
 			}
 
 		} else if ("Raster" == commandType) {
@@ -2735,8 +2944,7 @@ public class PrinterFunctions {
 			 * using StarIOPort.jar Android OS Version: under 2.1 port = StarIOPort.getPort(portName, portSettings, 10000);
 			 */
 			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
+				Thread.sleep(100); } catch (InterruptedException e) {
 			}
 
 			/*
